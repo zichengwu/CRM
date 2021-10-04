@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cheng.ssm.workbench.dao.ActivityDao">
+
+    <!--插入市场活动信息-->
+    <insert id="insertActivity" >
+        insert into tbl_activity(id,owner,name,startDate,endDate,cost,description,createTime,createBy)
+        values (#{id},#{owner},#{name},#{startDate},#{endDate},#{cost},#{description},#{createTime},#{createBy})
+    </insert>
+
+    <!--分页或者依据条件查询市场活动信息-->
+    <select id="getActivityListByCondition" resultType="Activity">
+        select a.id, a.name, u.name as owner, a.startDate, a.endDate, a.createTime
+        from tbl_activity a join tbl_user u on a.owner = u.id
+        <where>
+            <if test="name != null and name != ''">
+                a.name like '%' #{name} '%'
+            </if>
+            <if test="owner != null and owner != ''">
+                and u.name like '%' #{owner} '%'
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and a.startDate &gt; #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                and a.endDate &lt; #{endDate}
+            </if>
+        </where>
+        order by a.createTime desc
+    </select>
+
+    <!--删除多条市场活动数据-->
+    <delete id="deleteActivity" >
+        delete from tbl_activity where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--查询一条市场活动记录-->
+    <select id="selectActivityById" resultType="Activity">
+        select * from tbl_activity where id = #{id}
+    </select>
+
+    <!--依据id更改一条活动记录-->
+    <update id="updateActivityById" >
+        update tbl_activity set
+            owner = #{owner} ,
+            name = #{name},
+            startDate = #{startDate},
+            endDate = #{endDate},
+            cost = #{cost},
+            description = #{description},
+            editTime = #{editTime},
+            editBy = #{editBy} where id = #{id}
+    </update>
+
+    <!--根据id查看市场活动-->
+    <select id="selectDetailById" resultType="Activity">
+        select
+            a.id,
+            u.name as owner,
+            a.name,
+            a.startDate,
+            a.endDate,
+            a.cost,
+            a.description,
+            a.createTime,
+            a.createBy,
+            a.editTime,
+            a.editBy
+        from tbl_activity a
+        join tbl_user u
+         on a.owner = u.id
+        where a.id = #{id}
+    </select>
+
+    <!--根据线索id查询关联的市场活动-->
+    <select id="selectActivitiesByClueId" resultType="Activity">
+        select
+            car.id as id,
+            a.name,
+            a.startDate,
+            a.endDate,
+            u.name as owner
+        from tbl_activity a
+            join tbl_user u
+                on a.owner = u.id
+            join tbl_clue_activity_relation car
+                on a.id = car.activityId
+        where car.clueId = #{clueId}
+    </select>
+
+    <!--根据名称模糊查询市场活动列表用于关联线索（去掉已经关联线索id的活动）-->
+    <select id="getAcByNameAndNotBind" resultType="Activity">
+        select
+            a.id,
+            a.name,
+            a.startDate,
+            a.endDate,
+            u.name as owner
+        from tbl_activity a
+                 join tbl_user u
+                      on a.owner = u.id
+        where a.name like '%' #{param1} '%' and a.id not in(
+            select activityId
+            from tbl_clue_activity_relation
+            where clueId = #{param2}
+        )
+    </select>
+
+    <!--根据名称模糊查市场活动-->
+    <select id="getAcByName" resultType="Activity">
+        select
+            a.id,
+            u.name as owner,
+            a.name,
+            a.startDate,
+            a.endDate
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        where a.name like '%' #{name} '%'
+    </select>
+</mapper>

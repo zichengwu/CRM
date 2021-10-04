@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cheng.ssm.workbench.dao.CustomerDao">
+
+    <!--根据客户名字来搜索客户判断是否存在-->
+    <select id="selectCusByName" resultType="Customer">
+        select * from tbl_customer where name = #{name}
+    </select>
+
+    <!--添加客户-->
+    <insert id="save">
+        insert into tbl_customer(
+            id,
+            owner,
+            name,
+            website,
+            phone,
+            createBy,
+            createTime,
+            contactSummary,
+            nextContactTime,
+            description,
+            address
+        )
+        values(
+            #{id},
+            #{owner},
+            #{name},
+            #{website},
+            #{phone},
+            #{createBy},
+            #{createTime},
+            #{contactSummary},
+            #{nextContactTime},
+            #{description},
+            #{address}
+        )
+    </insert>
+
+    <!--根据姓名字段模糊查询客户-->
+    <select id="getCustomerName" resultType="String">
+        select name from tbl_customer where name like '%' #{name} '%'
+    </select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cheng.ssm.workbench.dao.ContactsActivityRelationDao">
+
+    <!--插入一条联系人市场活动关联（由线索和市场活动关联转来）-->
+    <insert id="insertRelation">
+        insert into tbl_contacts_activity_relation(
+               id, contactsId, activityId)
+        values (
+                #{id},
+                #{contactsId},
+                #{activityId}
+               )
+    </insert>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

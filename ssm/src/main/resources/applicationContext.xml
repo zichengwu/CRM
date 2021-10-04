@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- Spring配置文件, 这里主要配置和业务逻辑有关的 -->
+    <context:component-scan base-package="com.cheng.ssm">
+        <!--只不要Controller控制器(注解)-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 引入外部properties文件 -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!-- 数据源 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!-- 配置MyBatis整合 配置SqlSessionFactory 利用SqlSessionFactoryBean类 来在其内部构造一个SqlSessionFactory -->
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 指定MyBatis全局配置文件的位置 configLocation属性是Resource类型的 是spring用来读取外部配置信息的 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!-- 指定数据源 set注入 将druid连接池 赋给了dataSource这个属性  相当于在mybatis的配置文件中的environment声明了POOLED -->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 指定MyBatis Mapper文件的位置 -->
+        <property name="mapperLocations" >
+            <list>
+                <value>classpath:com/cheng/ssm/settings/dao/*.xml</value>
+                <value>classpath:com/cheng/ssm/workbench/dao/*.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置扫描器, 将Mapper接口生成代理注入到Spring -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 指定mapper接口所在包 -->
+        <property name="basePackage" value="com.cheng.ssm.settings.dao,com.cheng.ssm.workbench.dao"/>
+        <!-- 指定sqlSessionFactoryBean配置在Spring中的id值 -->
+        <property name="sqlSessionFactoryBeanName" value="sessionFactory"/>
+    </bean>
+
+    <!-- 配置一个可以执行批量操作的sqlSession -->
+    <bean class="org.mybatis.spring.SqlSessionTemplate" id="sessionTemplate">
+        <!-- 指定sqlSessionFactory -->
+        <constructor-arg name="sqlSessionFactory" ref="sessionFactory"/>
+        <!-- 设置执行类型为Batch -->
+        <constructor-arg name="executorType" value="BATCH"/>
+    </bean>
+
+    <!--事务管理控制-->
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="transactionManager">
+        <!-- 控制主数据源 -->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--开启事务注解驱动，告诉spring使用注解管理事务
+        在service类中的public方法上直接使用@Transactional注解就可以开启事务-->
+    <tx:annotation-driven/>
+    <!-- 使用xml配置形式的事务(重要的都是使用xml) -->
+    <!--<aop:config>
+    &lt;!&ndash; 配置切入点表达式 &ndash;&gt;
+    <aop:pointcut id="txPoint" expression="execution(* com.cheng.ssm.settings.service..*(..))"/>
+    &lt;!&ndash;配置事务增强&ndash;&gt;
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint"/>
+</aop:config>-->
+
+
+    <!-- 配置事务增强，事务如何切入 -->
+    <tx:advice id="txAdvice">
+        <tx:attributes>
+            <!-- 所有方法都是事务方法 -->
+            <tx:method name="*"/>
+            <!-- 以get开始的方法设置只读事务, 底层有优化 -->
+            <tx:method name="get*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+</beans>

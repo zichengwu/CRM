@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cheng.ssm.workbench.dao.ClueDao">
+
+    <!--保存一条线索-->
+    <insert id="insertClue">
+        insert into tbl_clue(
+            id,
+            fullname,
+            appellation,
+            owner,
+            company,
+            job,
+            email,
+            phone,
+            website,
+            mphone,
+            state,
+            source,
+            createBy,
+            createTime,
+            description,
+            contactSummary,
+            nextContactTime,
+            address
+        )
+        values (
+                   #{id},
+                   #{fullname},
+                   #{appellation},
+                   #{owner},
+                   #{company},
+                   #{job},
+                   #{email},
+                   #{phone},
+                   #{website},
+                   #{mphone},
+                   #{state},
+                   #{source},
+                   #{createBy},
+                   #{createTime},
+                   #{description},
+                   #{contactSummary},
+                   #{nextContactTime},
+                   #{address}
+               )
+    </insert>
+
+    <!--获取所有线索用于分页-->
+    <select id="getPageList" resultType="Clue">
+        select a.id, a.fullname, u.name as owner, a.company, a.phone, a.mphone, a.source, a.state, a.createTime
+        from tbl_clue a join tbl_user u on a.owner = u.id
+        order by a.createTime desc
+    </select>
+
+    <!--根据id获取线索详情-->
+    <select id="getClueById" resultType="Clue">
+        select
+            a.id,
+            a.fullname,
+            a.appellation,
+            u.name as owner,
+            a.company,
+            a.job,
+            a.email,
+            a.phone,
+            a.website,
+            a.mphone,
+            a.state,
+            a.source,
+            a.createBy,
+            a.createTime,
+            a.editBy,
+            a.description,
+            a.contactSummary,
+            a.nextContactTime,
+            a.address
+        from tbl_clue a join tbl_user u on a.owner = u.id where a.id = #{id}
+    </select>
+
+    <!--根据线索id获取线索（不需要转变owner）-->
+    <select id="selectClueById" resultType="Clue">
+        select * from tbl_clue where id = #{id}
+    </select>
+
+    <!--根据id删除线索-->
+    <delete id="deleteClueById">
+        delete from tbl_clue where id = #{id}
+    </delete>
+</mapper>
